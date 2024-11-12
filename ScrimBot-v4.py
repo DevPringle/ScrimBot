@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from datetime import datetime
+import pytz
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -121,6 +122,12 @@ async def add_scrim(ctx, *, date_time: str):
     try:
         # Attempt to parse date and time
         date_time_parsed = datetime.strptime(date_time, "%Y-%m-%d %I:%M %p")
+        
+        est = pytz.timezone("America/New_York")
+        date_time_est = est.localize(date_time_parsed)
+
+        date_time_utc = date_time_est.astimezone(pytz.utc)
+        
         date_markdown = f"<t:{int(date_time_parsed.timestamp())}:F>"  # Format to Discord markdown
         available_scrims.append({"datetime": date_markdown, "status": "Available", "captain": None})
         await ctx.send("Scrim added successfully. Confirming to LF-scrims channel...", delete_after=5)
@@ -140,7 +147,7 @@ async def delete_scrim(ctx, index: int):
         if scrim_to_delete < 0 or scrim_to_delete >= len(available_scrims):
             await ctx.send("Invalid scrim slot number.", delete_after=5)
             return
-git 
+        
         # Remove the scrim from the list
         deleted_scrim = available_scrims.pop(scrim_to_delete)
         print(f"Scrim on {deleted_scrim['datetime']} has been deleted.")
